@@ -8,12 +8,19 @@ local RS = game:GetService("ReplicatedStorage")
 local TP = game:GetService("TeleportService")
 local p = game:GetService("Players").LocalPlayer
 local R = RS:FindFirstChild("Remote") and RS.Remote:FindFirstChild("Season")
-local tpStarted = false
+-- Rejoin: ใช้ remote ของเกมเอง (AFK/AFKHandle) แทน TeleportService
+-- เหตุผล: TeleportService ถูก hook โดย Delta -> "The current thread cannot call this
+-- function (blocked)" แต่ AFKHandle ให้ SERVER สั่ง teleport เอง (ยิงแล้วรีจอยจริง)
+-- ทำงานตอน AFKClient.client.lua ยิงหลัง idle 1100 วิ (เรายิงก่อนเพื่อรีจอยทันที)
+local AFK = RS:FindFirstChild("Remote") and RS.Remote:FindFirstChild("AFK")
 local function hop()
-    delay(1, function()
-        TP:Teleport(game.PlaceId, p)
-        tpStarted = true
-    end)
+    local afk = AFK and AFK:FindFirstChild("AFKHandle")
+    if not afk then
+        task.delay(0.5, function() pcall(function() TP:Teleport(game.PlaceId) end) end)
+        return
+    end
+    task.wait(0.6)
+    pcall(function() afk:FireServer() end)
 end
 if not R then task.wait(2) return hop() end
 local allR = R:FindFirstChild("TryClaimAllRewardRE")
