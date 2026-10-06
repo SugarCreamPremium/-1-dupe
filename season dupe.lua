@@ -8,7 +8,13 @@ local RS = game:GetService("ReplicatedStorage")
 local TP = game:GetService("TeleportService")
 local p = game:GetService("Players").LocalPlayer
 local R = RS:FindFirstChild("Remote") and RS.Remote:FindFirstChild("Season")
-local function hop() task.delay(0, function() pcall(function() TP:Teleport(game.PlaceId) end) end) end
+local tpStarted = false
+local function hop()
+    delay(1, function()
+        TP:Teleport(game.PlaceId, p)
+        tpStarted = true
+    end)
+end
 if not R then task.wait(2) return hop() end
 local allR = R:FindFirstChild("TryClaimAllRewardRE")
 local freeR = R:FindFirstChild("TryClaimFreeRewardRE")
